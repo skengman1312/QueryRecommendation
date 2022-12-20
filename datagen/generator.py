@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 
 class DataSet:
@@ -45,11 +46,13 @@ class DataSet:
         # in general i doubt there will be many duplicates,
         # we can also consider a datastructures dedicated to query logs aas a stand alone class
         log = list()
-        while len(log) < log_len:
-            q = next(self.query_gen())
-            if q not in log:
-                q.id = len(log)
-                log.append(q)
+        with tqdm(total=log_len, desc= "Query log generation") as pbar:
+            while len(log) < log_len:
+                q = next(self.query_gen())
+                if q not in log:
+                    q.id = len(log)
+                    log.append(q)
+                    pbar.update(1)
         self.log = log
         return log
 
@@ -90,7 +93,7 @@ if __name__ == "__main__":
     # d.table["attr_0"].value_counts().sort_index().plot()
     # d.table["attr_9"].plot(kind="hist")
     # plt.show()
-    print(d.unique_query_log_gen(5))
+    print(d.unique_query_log_gen(5000))
     # print(next(d.query_gen()))
 
     # q = Query(0, [("attr", "==", "val"), ("attr0", "==", "val0")])
