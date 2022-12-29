@@ -40,9 +40,12 @@ class DataSet:
                            self.table[attr].dtype == "object"}
         cont_query_dict = {attr: np.round(decimals=4, a=np.random.normal(loc=5, scale=1)) for attr in query_attr if
                            self.table[attr].dtype == "float64"}
-
-        yield Query(0, [(attr, "==", f"'{value}'") for attr, value in disc_query_dict.items()] +
-                    [(attr, np.random.choice((">", "<")), value) for attr, value in cont_query_dict.items()])
+        q = Query(0, [(attr, "==", f"'{value}'") for attr, value in disc_query_dict.items()] +
+                  [(attr, np.random.choice((">", "<")), value) for attr, value in cont_query_dict.items()])
+        if len(self.query(q)) > 0:
+            yield q
+        else:
+            yield next(self.query_gen())
 
     def unique_query_log_gen(self, log_len):
         """
@@ -95,22 +98,72 @@ class Query:
         return set(self.attr) == set(other.attr) and self.conditions == other.conditions
 
 
+class User:
+
+    def __init__(self, dataset, identifier=0):
+        self.id = identifier
+        self.queries = None
+        self.seed = None
+        self.iseed = None
+        self.dataset = dataset
+
+    def random_qseed(self, n=6):
+        """
+        Generates a set of seed queries used for evaluation
+        :param n:
+        :return:
+        """
+        self.queries = self.dataset.unique_query_log_gen(log_len=n)
+        self.seed = pd.concat([self.dataset.query(q) for q in self.queries], axis=0)
+        self.iseed = self.seed.index
+
+        if len(self.iseed) < 10000:
+             self.random_qseed(n=n)
+        else:
+            print(len(self.iseed))
+
+    def rate(self, q):
+        """
+        Function to produce rating of a query q
+        :param q: query to be rated by the user
+        :return:
+        """
+        # print(self.dataset.table)
+        qi = self.dataset.query(q).index  # index of the values returned by the query q
+        return len(qi.intersection(self.iseed)) / len(qi) if len(qi) > 0 else 0
+
+
 if __name__ == "__main__":
-    d = DataSet(n_entries=1000000, n_discrete_attributes=5, discrete_attribute_variations=100)
+    d = DataSet(n_entries=100000, n_discrete_attributes=5, discrete_attribute_variations=100)
 
     # print(d.table["attr_0"].value_counts())
     # d.table["attr_0"].value_counts().sort_index().plot()
     # d.table["attr_9"].plot(kind="hist")
     # plt.show()
-    #print(d.unique_query_log_gen(5000))
+    # print(d.unique_query_log_gen(5000))
     # for name in d.table.columns:
     #     print(name)
     #     print(d.table[name].dtype)
-    q =next(d.query_gen())
+    q = next(d.query_gen())
     print(q)
-    print(d.query(q))
-    # q = Query(0, [("attr", "==", "val"), ("attr0", "==", "val0")])
+    # print(q.conditions)
+    #print(d.query(q))
+    # q = Query(0, [("attr_2", "==", "'value_8'"), ("attr_1", "==", "'value_0'"), ("attr_8", "<", 6.0794)])
+    # print(q)
+    # print(d.query(q))
     # qq = Query(1, [("attr", "==", "val"), ("attr0", "==", "val0")])
     # l = [q]
     # print(qq in l)
-    # qqq = Query(2, [("attr0", "==", "val0"), ("attr", "==", "val")])
+    # qqq = Query(2, [("attr0", "==", "val0"), ("attr7", "==", "val2")])
+
+    log = d.unique_query_log_gen(1000)
+    u = User(d)
+    u.random_qseed()
+    log_rating = pd.DataFrame([u.rate(q) for q in log]).sort_values(0)
+    log_rating.plot(kind = "hist",bins=100)
+    print(f"mean: {log_rating.mean()}")
+    print(f"max: {log_rating.max()}")
+    print(f"min: {log_rating.min()}")
+
+
+    plt.show()
