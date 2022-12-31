@@ -29,7 +29,7 @@ class DataSet:
 
     def query_gen(self):
         """
-        generator for queries, atm working only with categorical data and equalities
+        generator for queries
         """
         # randomly samples from norm the number of conditions for each query
         query_len = int(np.random.normal(loc=self.table.shape[1] // 3, scale=1, size=1).clip(1, self.table.shape[1]))
