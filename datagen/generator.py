@@ -73,6 +73,9 @@ class DataSet:
         """
         return self.table.query((str(q)))
 
+    @staticmethod
+    def from_csv(self, filename):
+        print(filename)
 
 class Query:
     """
@@ -118,9 +121,7 @@ class User:
         self.iseed = self.seed.index
 
         if len(self.iseed) < 10000:
-             self.random_qseed(n=n)
-        else:
-            print(len(self.iseed))
+            self.random_qseed(n=n)
 
     def rate(self, q):
         """
@@ -130,11 +131,32 @@ class User:
         """
         # print(self.dataset.table)
         qi = self.dataset.query(q).index  # index of the values returned by the query q
-        return len(qi.intersection(self.iseed)) / len(qi) if len(qi) > 0 else 0
+        return np.round(len(qi.intersection(self.iseed)) / len(qi), decimals=4) if len(qi) > 0 else 0
+
+
+class QueryLog:
+
+    def __init__(self, dataset, n_queries, n_users, n_queries_per_user):
+        self.dataset = dataset
+        self.queries = dataset.unique_query_log_gen(n_queries)
+        self.users = [User(dataset, identifier=i) for i in range(n_users)]
+        [u.random_qseed() for u in self.users]
+        self._ratings = [[(q.id, u.rate(q))
+                         for q in np.random.choice(self.queries, size=n_queries_per_user, replace=False)]
+                        for u in self.users]
+        self._ratings = [pd.DataFrame(r).set_index(0) for r in self._ratings]
+
+        self.ratings = pd.concat(self._ratings, axis=1, ignore_index=False).sort_index()
+        self.ratings.columns = list(range(len(self.users)))
+        print(self.ratings)
+        print(self.__class__.__name__)
+
+
 
 
 if __name__ == "__main__":
     d = DataSet(n_entries=100000, n_discrete_attributes=5, discrete_attribute_variations=100)
+
 
     # print(d.table["attr_0"].value_counts())
     # d.table["attr_0"].value_counts().sort_index().plot()
@@ -144,10 +166,10 @@ if __name__ == "__main__":
     # for name in d.table.columns:
     #     print(name)
     #     print(d.table[name].dtype)
-    q = next(d.query_gen())
-    print(q)
+    # q = next(d.query_gen())
+    # print(q)
     # print(q.conditions)
-    #print(d.query(q))
+    # print(d.query(q))
     # q = Query(0, [("attr_2", "==", "'value_8'"), ("attr_1", "==", "'value_0'"), ("attr_8", "<", 6.0794)])
     # print(q)
     # print(d.query(q))
@@ -156,14 +178,17 @@ if __name__ == "__main__":
     # print(qq in l)
     # qqq = Query(2, [("attr0", "==", "val0"), ("attr7", "==", "val2")])
 
-    log = d.unique_query_log_gen(1000)
-    u = User(d)
-    u.random_qseed()
-    log_rating = pd.DataFrame([u.rate(q) for q in log]).sort_values(0)
-    log_rating.plot(kind = "hist",bins=100)
-    print(f"mean: {log_rating.mean()}")
-    print(f"max: {log_rating.max()}")
-    print(f"min: {log_rating.min()}")
+    # log = d.unique_query_log_gen(1000)
+    # u = User(d)
+    # u.random_qseed()
+    # log_rating = pd.DataFrame([u.rate(q) for q in log]).sort_values(0)
+    # log_rating.plot(kind="hist", bins=100)
+    # print(f"mean: {log_rating.mean()}")
+    # print(f"max: {log_rating.max()}")
+    # print(f"min: {log_rating.min()}")
+    #
+    # plt.show()
 
 
-    plt.show()
+
+    #ql = QueryLog(d, 1000, 5, 600)
