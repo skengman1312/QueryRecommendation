@@ -73,9 +73,16 @@ class DataSet:
         """
         return self.table.query((str(q)))
 
-    @staticmethod
-    def from_csv(self, filename):
-        print(filename)
+    def save_csv(self, filepath="../data/test_dataset.csv"):
+        self.table.to_csv(filepath)
+        pass
+
+    @classmethod
+    def from_csv(cls, filepath="../data/test_dataset.csv"):
+        td = cls(0, 0, 0, 0)
+        td.table = pd.read_csv(filepath, index_col=0)
+        return td
+
 
 class Query:
     """
@@ -142,8 +149,8 @@ class QueryLog:
         self.users = [User(dataset, identifier=i) for i in range(n_users)]
         [u.random_qseed() for u in self.users]
         self._ratings = [[(q.id, u.rate(q))
-                         for q in np.random.choice(self.queries, size=n_queries_per_user, replace=False)]
-                        for u in self.users]
+                          for q in np.random.choice(self.queries, size=n_queries_per_user, replace=False)]
+                         for u in self.users]
         self._ratings = [pd.DataFrame(r).set_index(0) for r in self._ratings]
 
         self.ratings = pd.concat(self._ratings, axis=1, ignore_index=False).sort_index()
@@ -152,11 +159,8 @@ class QueryLog:
         print(self.__class__.__name__)
 
 
-
-
 if __name__ == "__main__":
     d = DataSet(n_entries=100000, n_discrete_attributes=5, discrete_attribute_variations=100)
-
 
     # print(d.table["attr_0"].value_counts())
     # d.table["attr_0"].value_counts().sort_index().plot()
@@ -188,7 +192,7 @@ if __name__ == "__main__":
     # print(f"min: {log_rating.min()}")
     #
     # plt.show()
+    d.save_csv()
+    DataSet.from_csv()
 
-
-
-    #ql = QueryLog(d, 1000, 5, 600)
+    # ql = QueryLog(d, 1000, 5, 600)
