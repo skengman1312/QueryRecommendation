@@ -42,7 +42,8 @@ class DataSet:
                            self.table[attr].dtype == "float64"}
         q = Query(0, [(attr, "==", f"'{value}'") for attr, value in disc_query_dict.items()] +
                   [(attr, np.random.choice((">", "<")), value) for attr, value in cont_query_dict.items()])
-        if len(self.query(q)) > 0:
+
+        if len(self.query(q)) > 0:  # yields only non-null queries
             yield q
         else:
             yield next(self.query_gen())
@@ -51,9 +52,9 @@ class DataSet:
         """
         generates a log of unique queries
         """
-        # we have to decide whether or not make each query unique or not,
-        # in general i doubt there will be many duplicates,
-        # we can also consider a datastructures dedicated to query logs aas a stand alone class
+        # we have to decide whether we make each query unique or not,
+        # in general I doubt there will be many duplicates,
+        # we can also consider a datastructures dedicated to query logs aas a stand-alone class
         log = list()
         with tqdm(total=log_len, desc="Query log generation") as pbar:
             while len(log) < log_len:
@@ -68,17 +69,26 @@ class DataSet:
     def query(self, q):
         """
         query function to call pandas query
-        :param q:
+        :param q: query to be evaluated
         :return:
         """
         return self.table.query((str(q)))
 
     def save_csv(self, filepath="../data/test_dataset.csv"):
+        """
+        Exports the object as a csv to the specified path
+        :param filepath: path of the csv
+        :return:
+        """
         self.table.to_csv(filepath)
-        pass
 
     @classmethod
     def from_csv(cls, filepath="../data/test_dataset.csv"):
+        """
+        Loads a csv file as the DataSet
+        :param filepath: path of the csv file containing the dataset
+        :return: DataSet obj initialized with the table stored in the csv
+        """
         td = cls(0, 0, 0, 0)
         td.table = pd.read_csv(filepath, index_col=0)
         return td
@@ -86,18 +96,22 @@ class DataSet:
 
 class Query:
     """
-    simple class to hold a single query, atm only equalities are accepted
+    simple class to hold a single query
     """
 
     def __init__(self, identifier: int, conditions):
         self.id = identifier
-        self.attr = [a[0] for a in conditions]
+        self.attr = [a[0] for a in conditions]  # variable to hold the attributes included in the query,
+        # can speed up the comparison
         assert len(self.attr) == len(set(self.attr)), "only one condition per attribute is allowed"
         self.conditions = conditions
         self.conditions.sort()
-        pass
 
     def __str__(self):
+        """
+        string representation method
+        :return:
+        """
         s = ["({} {} {})".format(*i) for i in self.conditions]
         return f'({" & ".join(s)})'
 
@@ -105,10 +119,18 @@ class Query:
         return f"{self.id}::{self.__str__()}"  # to fix probably
 
     def __eq__(self, other):
+        """
+        Method used to ovverride the == operator and to allow faster equivalence comparison between queries
+        :param other: The second Query obj in the comparison
+        :return:
+        """
         return set(self.attr) == set(other.attr) and self.conditions == other.conditions
 
 
 class User:
+    """
+    A single user
+    """
 
     def __init__(self, dataset, identifier=0):
         self.id = identifier
@@ -120,14 +142,15 @@ class User:
     def random_qseed(self, n=6):
         """
         Generates a set of seed queries used for evaluation
-        :param n:
+        :param n: number of queries included in the seed
         :return:
         """
         self.queries = self.dataset.unique_query_log_gen(log_len=n)
         self.seed = pd.concat([self.dataset.query(q) for q in self.queries], axis=0)
         self.iseed = self.seed.index
 
-        if len(self.iseed) < 10000:
+        if len(self.iseed) < 10000:  # check that the query seeds poit at sufficiently large portion of the dataset,
+            # otherwise, the user will be very difficult to satisfy
             self.random_qseed(n=n)
 
     def rate(self, q):
@@ -138,6 +161,8 @@ class User:
         """
         # print(self.dataset.table)
         qi = self.dataset.query(q).index  # index of the values returned by the query q
+        # the query is rated:
+        # (number of rows pointed both by seed and rated query) / (number of rows pointed by rated query)
         return np.round(len(qi.intersection(self.iseed)) / len(qi), decimals=4) if len(qi) > 0 else 0
 
 
