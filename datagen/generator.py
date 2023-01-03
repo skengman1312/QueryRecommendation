@@ -141,7 +141,10 @@ class User:
         return np.round(len(qi.intersection(self.iseed)) / len(qi), decimals=4) if len(qi) > 0 else 0
 
 
-class QueryLog:
+class UtilityMatrix:
+    """
+    Class that computes and stores the utility matrix 
+    """
 
     def __init__(self, dataset, n_queries, n_users, n_queries_per_user):
         self.dataset = dataset
@@ -192,7 +195,6 @@ if __name__ == "__main__":
     # print(f"min: {log_rating.min()}")
     #
     # plt.show()
-    d.save_csv()
-    DataSet.from_csv()
+    # d.save_csv()
 
-    # ql = QueryLog(d, 1000, 5, 600)
+    ql = UtilityMatrix(d, 1000, 5, 600)
