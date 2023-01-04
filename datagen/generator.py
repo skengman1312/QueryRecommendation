@@ -168,12 +168,13 @@ class User:
 
 class UtilityMatrix:
     """
-    Class that computes and stores the utility matrix 
+    Class that computes and stores the utility matrix, requires a dataset
     """
 
     def __init__(self, dataset, n_queries, n_users, n_queries_per_user):
         self.dataset = dataset
-        self.queries = dataset.unique_query_log_gen(n_queries)
+        self.queries = pd.Series(dataset.unique_query_log_gen(n_queries))
+        print(self.queries)
         self.users = [User(dataset, identifier=i) for i in range(n_users)]
         [u.random_qseed() for u in self.users]
         self._ratings = [[(q.id, u.rate(q))
@@ -183,8 +184,15 @@ class UtilityMatrix:
 
         self.ratings = pd.concat(self._ratings, axis=1, ignore_index=False).sort_index()
         self.ratings.columns = list(range(len(self.users)))
+        self.ratings = self.ratings.transpose()
+
         print(self.ratings)
         print(self.__class__.__name__)
+
+    def export_csv(self, filepath):
+        self.ratings.to_csv(f"{filepath}/utility_matrix.csv")
+        self.queries.astype(str).str.replace(r"[\(*\)*]", "").str.split("&", expand=True).to_csv(
+            f"{filepath}/query_log.csv")
 
 
 if __name__ == "__main__":
@@ -222,4 +230,5 @@ if __name__ == "__main__":
     # plt.show()
     # d.save_csv()
 
-    ql = UtilityMatrix(d, 1000, 5, 600)
+    um = UtilityMatrix(d, 1000, 5, 600)
+    um.export_csv("../data/")
