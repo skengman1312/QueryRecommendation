@@ -48,7 +48,7 @@ class DataSet:
         else:
             yield next(self.query_gen())
 
-    def unique_query_log_gen(self, log_len):
+    def unique_query_log_gen(self, log_len, disable=False):
         """
         generates a log of unique queries
         """
@@ -56,7 +56,7 @@ class DataSet:
         # in general I doubt there will be many duplicates,
         # we can also consider a datastructures dedicated to query logs aas a stand-alone class
         log = list()
-        with tqdm(total=log_len, desc="Query log generation") as pbar:
+        with tqdm(total=log_len, desc="Query log generation", disable=disable) as pbar:
             while len(log) < log_len:
                 q = next(self.query_gen())
                 if q not in log:
@@ -74,7 +74,7 @@ class DataSet:
         """
         return self.table.query((str(q)))
 
-    def save_csv(self, filepath="../data/test_dataset.csv"):
+    def save_csv(self, filepath="../data/dataset.csv"):
         """
         Exports the object as a csv to the specified path
         :param filepath: path of the csv
@@ -83,7 +83,7 @@ class DataSet:
         self.table.to_csv(filepath)
 
     @classmethod
-    def from_csv(cls, filepath="../data/test_dataset.csv"):
+    def from_csv(cls, filepath="../data/dataset.csv"):
         """
         Loads a csv file as the DataSet
         :param filepath: path of the csv file containing the dataset
@@ -145,7 +145,7 @@ class User:
         :param n: number of queries included in the seed
         :return:
         """
-        self.queries = self.dataset.unique_query_log_gen(log_len=n)
+        self.queries = self.dataset.unique_query_log_gen(log_len=n, disable=True)
         self.seed = pd.concat([self.dataset.query(q) for q in self.queries], axis=0)
         self.iseed = self.seed.index
 
@@ -174,25 +174,22 @@ class UtilityMatrix:
     def __init__(self, dataset, n_queries, n_users, n_queries_per_user):
         self.dataset = dataset
         self.queries = pd.Series(dataset.unique_query_log_gen(n_queries))
-        print(self.queries)
         self.users = [User(dataset, identifier=i) for i in range(n_users)]
         [u.random_qseed() for u in self.users]
         self._ratings = [[(q.id, u.rate(q))
                           for q in np.random.choice(self.queries, size=n_queries_per_user, replace=False)]
-                         for u in self.users]
+                         for u in tqdm(self.users)]
         self._ratings = [pd.DataFrame(r).set_index(0) for r in self._ratings]
 
         self.ratings = pd.concat(self._ratings, axis=1, ignore_index=False).sort_index()
         self.ratings.columns = list(range(len(self.users)))
         self.ratings = self.ratings.transpose()
 
-        print(self.ratings)
-        print(self.__class__.__name__)
-
     def export_csv(self, filepath):
         self.ratings.to_csv(f"{filepath}/utility_matrix.csv")
         self.queries.astype(str).str.replace(r"[\(*\)*]", "").str.split("&", expand=True).to_csv(
             f"{filepath}/query_log.csv")
+        pd.DataFrame([u.id for u in self.users]).set_index(0).to_csv(f"{filepath}/user_list.csv")
 
 
 if __name__ == "__main__":
@@ -228,7 +225,7 @@ if __name__ == "__main__":
     # print(f"min: {log_rating.min()}")
     #
     # plt.show()
-    # d.save_csv()
+    d.save_csv()
 
-    um = UtilityMatrix(d, 1000, 5, 600)
+    um = UtilityMatrix(d, 1000, 50, 600)
     um.export_csv("../data/")
