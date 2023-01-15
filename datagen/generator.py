@@ -175,10 +175,10 @@ class UtilityMatrix:
         self.dataset = dataset
         self.queries = pd.Series(dataset.unique_query_log_gen(n_queries))
         self.users = [User(dataset, identifier=i) for i in range(n_users)]
-        [u.random_qseed() for u in self.users]
+        [u.random_qseed() for u in tqdm(self.users, desc="Seeding the users")]
         self._ratings = [[(q.id, u.rate(q))
                           for q in np.random.choice(self.queries, size=n_queries_per_user, replace=False)]
-                         for u in tqdm(self.users)]
+                         for u in tqdm(self.users, desc="Rating")]
         self._ratings = [pd.DataFrame(r).set_index(0) for r in self._ratings]
 
         self.ratings = pd.concat(self._ratings, axis=1, ignore_index=False).sort_index()
