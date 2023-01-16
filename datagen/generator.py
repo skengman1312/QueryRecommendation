@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from utility_svd import SVT
+from .utility_svd import SVT
+
 
 class DataSet:
     """
@@ -192,7 +193,7 @@ class UtilityMatrix:
             f"{filepath}/query_log.csv")
         pd.DataFrame([u.id for u in self.users]).set_index(0).to_csv(f"{filepath}/user_list.csv")
 
-    def fill(self,  max_iter=1000):
+    def fill(self, max_iter=1000):
         self.filled_matrix, _ = SVT(self.ratings, max_iter=max_iter)
         self.filled_matrix = pd.DataFrame(self.filled_matrix)
         return self.filled_matrix

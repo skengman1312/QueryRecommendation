@@ -10,10 +10,10 @@ import math, random
 from tqdm import tqdm
 
 
-def SVT(M: pd.DataFrame, 
-        max_iter: int = 1500, 
-        delta: int = 2, 
-        tolerance: float = 0.001, 
+def SVT(M: pd.DataFrame,
+        max_iter: int = 1500,
+        delta: int = 2,
+        tolerance: float = 0.001,
         increment: int = 5):
     """
     Params:
@@ -26,13 +26,13 @@ def SVT(M: pd.DataFrame,
         X, rmse: complited matrix, error list
     """
     M = ss.csr_matrix(M.fillna(0).values)  # pandas DF into scipy sparse matrix
-    n,m = M.shape
+    n, m = M.shape
 
     total_num_nonzero = len(M.nonzero()[0])
     idx = random.sample(range(total_num_nonzero), int(total_num_nonzero))
     Omega = (M.nonzero()[0][idx], M.nonzero()[1][idx])
-    
-    tau = 5*math.sqrt(n*m)
+
+    tau = 5 * math.sqrt(n * m)
 
     ######
     # SVT
@@ -40,8 +40,8 @@ def SVT(M: pd.DataFrame,
     r = 0
     rmse = []
     data, indices = np.ravel(M[Omega]), Omega
-    P_Omega_M = ss.csr_matrix((data, indices), shape = (n,m))
-    k_0 = np.ceil(tau / (delta*ss_norm(P_Omega_M)))  # element-wise ceiling
+    P_Omega_M = ss.csr_matrix((data, indices), shape=(n, m))
+    k_0 = np.ceil(tau / (delta * ss_norm(P_Omega_M)))  # element-wise ceiling
     Y = k_0 * delta * P_Omega_M
 
     for _ in tqdm(range(max_iter)):
@@ -50,23 +50,24 @@ def SVT(M: pd.DataFrame,
             U, S, V = sparsesvd(ss.csc_matrix(Y), s)
             s += increment
             try:
-                if S[s-increment] <= tau : break
-            except: break
+                if S[s - increment] <= tau: break
+            except:
+                break
 
         r = np.sum(S > tau)
 
-        U = U.T[:,:r]
+        U = U.T[:, :r]
         S = S[:r] - tau
-        V = V[:r,:]
-        X = (U*S).dot(V)
-        X_omega = ss.csr_matrix((X[Omega],Omega),shape = (n,m))                                      
+        V = V[:r, :]
+        X = (U * S).dot(V)
+        X_omega = ss.csr_matrix((X[Omega], Omega), shape=(n, m))
 
         if ss_norm(X_omega - P_Omega_M) / ss_norm(P_Omega_M) < tolerance: break
 
         diff = P_Omega_M - X_omega
         Y += delta * diff
         rmse.append(np_norm(M[M.nonzero()] - X[M.nonzero()]) / np.sqrt(len(X[M.nonzero()])))
-
+    #### TODO: Clip the new matrix
     return X, rmse
 
 
@@ -80,7 +81,6 @@ if __name__ == "__main__":
     utility_df = pd.read_csv(utility_table_path, index_col=0)
     utility_df = utility_df
     print(utility_df.head(15))
-    
 
     ##################################
     # Compute SVT and visualize error
@@ -90,8 +90,8 @@ if __name__ == "__main__":
     print(pd.DataFrame(X).head(15))
 
     x_coordinate = range(len(rmse))
-    plt.ylim(0,0.5)
+    plt.ylim(0, 0.5)
     plt.xlabel('Number of iterations')
     plt.ylabel('RMSE')
-    plt.plot(x_coordinate,rmse,'-')
+    plt.plot(x_coordinate, rmse, '-')
     plt.show()

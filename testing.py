@@ -46,5 +46,5 @@ def full_matrix_test(um):
 
 if __name__ == "__main__":
     d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=2, discrete_attribute_variations=100)
-    um = UtilityMatrix(d, 1000, 40, 600)
+    um = UtilityMatrix(d, 1000, 100, 600)
     print(full_matrix_test(um))
