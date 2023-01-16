@@ -75,25 +75,19 @@ if __name__ == "__main__":
     # Read data
     ############
 
-if __name__ == "__main__":
-############
-# Read data
-############
-
-    utility_table_path = "./data/utility_matrix.csv"
     utility_table_path = "./data/utility_matrix.csv"
 
-utility_df = pd.read_csv(utility_table_path, index_col=0)
-utility_df = utility_df
-print(utility_df.head(15))
+    utility_df = pd.read_csv(utility_table_path, index_col=0)
+    utility_df = utility_df
+    print(utility_df.head(15))
     
 
-##################################
-# Compute SVT and visualize error
-##################################
+    ##################################
+    # Compute SVT and visualize error
+    ##################################
 
-        X, rmse = SVT(utility_df, max_iter=1500)
-        print(pd.DataFrame(X).head(15))
+    X, rmse = SVT(utility_df, max_iter=1500)
+    print(pd.DataFrame(X).head(15))
 
     x_coordinate = range(len(rmse))
     plt.ylim(0,0.5)
