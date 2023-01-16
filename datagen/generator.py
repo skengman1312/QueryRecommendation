@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-
+from utility_svd import SVT
 
 class DataSet:
     """
@@ -172,13 +172,14 @@ class UtilityMatrix:
     """
 
     def __init__(self, dataset, n_queries, n_users, n_queries_per_user):
+        self.filled_matrix = None
         self.dataset = dataset
         self.queries = pd.Series(dataset.unique_query_log_gen(n_queries))
         self.users = [User(dataset, identifier=i) for i in range(n_users)]
-        [u.random_qseed() for u in self.users]
+        [u.random_qseed() for u in tqdm(self.users, desc="Seeding the users")]
         self._ratings = [[(q.id, u.rate(q))
                           for q in np.random.choice(self.queries, size=n_queries_per_user, replace=False)]
-                         for u in tqdm(self.users)]
+                         for u in tqdm(self.users, desc="Rating")]
         self._ratings = [pd.DataFrame(r).set_index(0) for r in self._ratings]
 
         self.ratings = pd.concat(self._ratings, axis=1, ignore_index=False).sort_index()
@@ -190,6 +191,11 @@ class UtilityMatrix:
         self.queries.astype(str).str.replace(r"[\(*\)*]", "").str.split("&", expand=True).to_csv(
             f"{filepath}/query_log.csv")
         pd.DataFrame([u.id for u in self.users]).set_index(0).to_csv(f"{filepath}/user_list.csv")
+
+    def fill(self,  max_iter=1000):
+        self.filled_matrix, _ = SVT(self.ratings, max_iter=max_iter)
+        self.filled_matrix = pd.DataFrame(self.filled_matrix)
+        return self.filled_matrix
 
 
 if __name__ == "__main__":
