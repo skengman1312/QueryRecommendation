@@ -3,13 +3,15 @@ import numpy as np
 from numpy.linalg import norm as np_norm
 import scipy.sparse as ss
 from scipy.sparse.linalg import norm as ss_norm
+from scipy.sparse.linalg import svds
 from sparsesvd import sparsesvd
 import matplotlib.pyplot as plt
 import math, random
+from tqdm import tqdm
 
 
 def SVT(M: pd.DataFrame, 
-        max_iter: int = 100, 
+        max_iter: int = 1500, 
         delta: int = 2, 
         tolerance: float = 0.001, 
         increment: int = 5):
@@ -42,15 +44,14 @@ def SVT(M: pd.DataFrame,
     k_0 = np.ceil(tau / (delta*ss_norm(P_Omega_M)))  # element-wise ceiling
     Y = k_0 * delta * P_Omega_M
 
-    for _ in range(max_iter):
+    for _ in tqdm(range(max_iter)):
         s = r + 1
         while True:
             U, S, V = sparsesvd(ss.csc_matrix(Y), s)
-            try:  # TODO could not figure out why an error occures here
-                if S[s-1] <= tau : break
-            except: pass
             s += increment
-            if s > min(n,m): break
+            try:
+                if S[s-increment] <= tau : break
+            except: break
 
         r = np.sum(S > tau)
 
@@ -69,27 +70,28 @@ def SVT(M: pd.DataFrame,
     return X, rmse
 
 
-############
-# Read data
-############
+if __name__ == "__main__":
+    ############
+    # Read data
+    ############
 
-utility_table_path = "./data/utility_matrix.csv"
+    utility_table_path = "./data/utility_matrix.csv"
 
-utility_df = pd.read_csv(utility_table_path, index_col=0)
-utility_df = utility_df
-print(utility_df.head(15))
-    
+    utility_df = pd.read_csv(utility_table_path, index_col=0)
+    utility_df = utility_df
+    print(utility_df.head(15))
 
-##################################
-# Compute SVT and visualize error
-##################################
 
-X, rmse = SVT(utility_df, max_iter=500)
-print(pd.DataFrame(X).head(15))
+    ##################################
+    # Compute SVT and visualize error
+    ##################################
 
-x_coordinate = range(len(rmse))
-plt.ylim(0,0.5)
-plt.xlabel('Number of iterations')
-plt.ylabel('RMSE')
-plt.plot(x_coordinate,rmse,'-')
-plt.show()
+    X, rmse = SVT(utility_df, max_iter=1500)
+    print(pd.DataFrame(X).head(15))
+
+    x_coordinate = range(len(rmse))
+    plt.ylim(0,0.5)
+    plt.xlabel('Number of iterations')
+    plt.ylabel('RMSE')
+    plt.plot(x_coordinate,rmse,'-')
+    plt.show()
