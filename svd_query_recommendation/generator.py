@@ -1,8 +1,11 @@
 import pandas as pd
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from .utility_svd import SVT
+from .utils import *
+import traceback
 
 
 class DataSet:
@@ -166,6 +169,19 @@ class User:
         # (number of rows pointed both by seed and rated query) / (number of rows pointed by rated query)
         return np.round(len(qi.intersection(self.iseed)) / len(qi), decimals=4) if len(qi) > 0 else 0
 
+    def save(self, filename):
+        # (filename, line_number, function_name, text) = traceback.extract_stack()[-2]
+        # def_name = text[:text.find('=')].strip()
+        # print(def_name)
+        u_save(filename, self)
+
+    @classmethod
+    def load(cls, d, filename):
+        upd = u_load(filename)
+        up = cls(d)
+        up.__dict__ = upd
+        return up
+
 
 class UtilityMatrix:
     """
@@ -182,16 +198,42 @@ class UtilityMatrix:
                           for q in np.random.choice(self.queries, size=n_queries_per_user, replace=False)]
                          for u in tqdm(self.users, desc="Rating")]
         self._ratings = [pd.DataFrame(r).set_index(0) for r in self._ratings]
-
-        self.ratings = pd.concat(self._ratings, axis=1, ignore_index=False).sort_index()
-        self.ratings.columns = list(range(len(self.users)))
-        self.ratings = self.ratings.transpose()
+        if self._ratings:
+            self.ratings = pd.concat(self._ratings, axis=1, ignore_index=False).sort_index()
+            self.ratings.columns = list(range(len(self.users)))
+            self.ratings = self.ratings.transpose()
+        else:
+            self.ratings = None
 
     def export_csv(self, filepath):
         self.ratings.to_csv(f"{filepath}/utility_matrix.csv")
         self.queries.astype(str).str.replace(r"[\(*\)*]", "").str.split("&", expand=True).to_csv(
             f"{filepath}/query_log.csv")
         pd.DataFrame([u.id for u in self.users]).set_index(0).to_csv(f"{filepath}/user_list.csv")
+        isExist = os.path.exists(f"{filepath}/users")
+        if not isExist:
+            # Create a new directory because it does not exist
+            os.makedirs(f"{filepath}/users")
+        [u.save(filename=f"{filepath}/users/user_{u.id}") for u in self.users]
+
+    @classmethod
+    def from_dir(cls, filepath):
+        td = DataSet.from_csv(f"{filepath}/dataset.csv")
+        tc = cls(dataset=td, n_queries=0, n_users=0, n_queries_per_user=0)
+        tc.ratings = pd.read_csv(f"{filepath}/utility_matrix.csv", index_col=0)
+        tc.ratings.index = tc.ratings.index.astype("int64")
+        tc.ratings.columns =tc.ratings.columns.astype("int")
+
+        n_users = len([entry for entry in os.listdir(f"{filepath}/users") if
+                       os.path.isfile(os.path.join(f"{filepath}/users", entry))])
+
+        tc.users = [User.load(d=td, filename=f"{filepath}/users/user_{i}") for i in range(n_users)]
+        # pd.read_csv(filepath, index_col=0)
+
+        q = pd.read_csv(f"{filepath}/query_log.csv", index_col=0)
+        qq = [list(q.iloc[i, :].dropna()) for i in range(len(q))]
+        tc.queries = pd.Series([Query(identifier=i, conditions=[c.split() for c in q]) for q, i in zip(qq, range(len(qq)))], dtype=object)
+        return tc
 
     def fill(self, max_iter=1000):
         self.filled_matrix, _ = SVT(self.ratings, max_iter=max_iter)
@@ -234,5 +276,15 @@ if __name__ == "__main__":
     # plt.show()
     d.save_csv()
 
-    um = UtilityMatrix(d, 1000, 50, 600)
+    um = UtilityMatrix(d, 1000, 10, 600)
     um.export_csv("../data/")
+
+    # file = open("../data/prova" + '.txt', 'w')
+    # file.write(pickle.dumps(um.users[0].__dict__))
+    # file.close()
+
+    # file = open("./data/prova"+'.txt','rb')
+    # dataPickle = file.read()
+    # file.close()
+    # up = generator.User(d)
+    # up.__dict__= cPickle.loads(dataPickle)

@@ -1,11 +1,7 @@
 # import svd_query_recommendation.generator as gen
 # import svd_query_recommendation.utility_svd as svd
-import pandas as pd
-from tqdm import tqdm
 
-from svd_query_recommendation.generator import *
-from svd_query_recommendation.utility_svd import *
-from svd_query_recommendation.recommendation_svd import *
+from svd_query_recommendation import *
 
 def ctest(um, usid, qid):
     fm, _ = SVT(um.ratings, max_iter=1000)
@@ -48,11 +44,25 @@ def full_matrix_test(um):
 
 
 if __name__ == "__main__":
-    d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=2, discrete_attribute_variations=100)
-    um = UtilityMatrix(d, 1000, 10, 800)
-    fm, _ = SVT(um.ratings, max_iter=1500)
 
-    print(fm)
+    # d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=2, discrete_attribute_variations=100)
+    # d.save_csv("./data/dataset.csv")
+    # um = UtilityMatrix(d, 1000, 20, 600)
+    # um.export_csv("./data/")
+
+    #fm, _ = SVT(um.ratings, max_iter=1500)
 
 
-    #print(full_matrix_test(um))
+    um = UtilityMatrix.from_dir("./data/")
+
+
+
+    # u_save(filename, um.users[0])
+    # um.users[0].save(filename)
+    # upd = u_load(filename)
+    # up = User.load(d, filename=filename)
+    # up.__dict__ = upd
+    # print(fm)
+
+
+    print(full_matrix_test(um))
