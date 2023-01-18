@@ -22,8 +22,11 @@ def full_matrix_test(um):
     :return: RMSE
     """
     fm, _ = SVT(um.ratings, max_iter=1500)
+    fm = fm.clip(0,1)
     fm = pd.DataFrame(fm)
+
     s, c = 0, 0
+
 
     for i in tqdm(um.ratings, desc="RMSE calculation", total=len(um.ratings.columns)):
         index = um.ratings[i][um.ratings[i].isna()].index
@@ -46,5 +49,8 @@ def full_matrix_test(um):
 
 if __name__ == "__main__":
     d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=2, discrete_attribute_variations=100)
-    um = UtilityMatrix(d, 1000, 100, 600)
+    um = UtilityMatrix(d, 1000, 10, 800)
+    fm, _ = SVT(um.ratings, max_iter=1500)
+    print(fm)
+
     print(full_matrix_test(um))

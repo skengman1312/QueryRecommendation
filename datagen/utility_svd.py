@@ -67,7 +67,8 @@ def SVT(M: pd.DataFrame,
         diff = P_Omega_M - X_omega
         Y += delta * diff
         rmse.append(np_norm(M[M.nonzero()] - X[M.nonzero()]) / np.sqrt(len(X[M.nonzero()])))
-    #### TODO: Clip the new matrix
+        X.clip(0, 1)
+
     return X, rmse
 
 
