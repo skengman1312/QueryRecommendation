@@ -1,11 +1,11 @@
-# import datagen.generator as gen
-# import datagen.utility_svd as svd
+# import svd_query_recommendation.generator as gen
+# import svd_query_recommendation.utility_svd as svd
 import pandas as pd
 from tqdm import tqdm
 
-from datagen.generator import *
-from datagen.utility_svd import *
-from datagen.recommendation_svd import *
+from svd_query_recommendation.generator import *
+from svd_query_recommendation.utility_svd import *
+from svd_query_recommendation.recommendation_svd import *
 
 def ctest(um, usid, qid):
     fm, _ = SVT(um.ratings, max_iter=1000)
