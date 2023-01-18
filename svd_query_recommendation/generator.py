@@ -235,7 +235,7 @@ class UtilityMatrix:
         tc.queries = pd.Series([Query(identifier=i, conditions=[c.split() for c in q]) for q, i in zip(qq, range(len(qq)))], dtype=object)
         return tc
 
-    def fill(self, max_iter=1000):
+    def fill(self, max_iter=1500):
         self.filled_matrix, _ = SVT(self.ratings, max_iter=max_iter)
         self.filled_matrix = pd.DataFrame(self.filled_matrix)
         return self.filled_matrix

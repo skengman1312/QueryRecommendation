@@ -54,8 +54,9 @@ if __name__ == "__main__":
 
 
     um = UtilityMatrix.from_dir("./data/")
+    um.fill()
 
-
+    u, s, vh = rec(um.filled_matrix)
 
     # u_save(filename, um.users[0])
     # um.users[0].save(filename)
@@ -65,4 +66,4 @@ if __name__ == "__main__":
     # print(fm)
 
 
-    print(full_matrix_test(um))
+    # print(full_matrix_test(um))
