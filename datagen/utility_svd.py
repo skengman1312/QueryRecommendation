@@ -44,7 +44,7 @@ def SVT(M: pd.DataFrame,
     k_0 = np.ceil(tau / (delta * ss_norm(P_Omega_M)))  # element-wise ceiling
     Y = k_0 * delta * P_Omega_M
 
-    for _ in tqdm(range(max_iter)):
+    for _ in tqdm(range(max_iter), desc= "Iteratively filling the matrix", colour="green"):
         s = r + 1
         while True:
             U, S, V = sparsesvd(ss.csc_matrix(Y), s)
