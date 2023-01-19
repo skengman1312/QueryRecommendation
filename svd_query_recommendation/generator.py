@@ -152,8 +152,9 @@ class User:
         self.queries = self.dataset.unique_query_log_gen(log_len=n, disable=True)
         self.seed = pd.concat([self.dataset.query(q) for q in self.queries], axis=0)
         self.iseed = self.seed.index
-
-        if len(self.iseed) < 10000:  # check that the query seeds poit at sufficiently large portion of the dataset,
+        # minumun number of element returned by the query seeds
+        smin = 1000
+        if len(self.iseed) < smin:  # check that the query seeds poit at sufficiently large portion of the dataset,
             # otherwise, the user will be very difficult to satisfy
             self.random_qseed(n=n)
 

@@ -4,7 +4,7 @@
 from svd_query_recommendation import *
 
 def ctest(um, usid, qid):
-    fm, _ = SVT(um.ratings, max_iter=1000)
+    fm, _ = fSVT(um.ratings, max_iter=1000)
     fm = pd.DataFrame(fm)
     print(um.queries[qid])
     print(f"truth: {um.users[usid].rate(um.queries[qid])}")
@@ -17,7 +17,7 @@ def full_matrix_test(um):
     :param um: Utility Matrix
     :return: RMSE
     """
-    fm, _ = SVT(um.ratings, max_iter=1500)
+    fm, _ = fSVT(um.ratings, max_iter=1500)
     fm = fm.clip(0,1)
     fm = pd.DataFrame(fm)
 
@@ -45,15 +45,16 @@ def full_matrix_test(um):
 
 if __name__ == "__main__":
 
-    # d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=2, discrete_attribute_variations=100)
-    # d.save_csv("./data/dataset.csv")
-    # um = UtilityMatrix(d, 1000, 20, 600)
-    # um.export_csv("./data/")
+    # d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=0, discrete_attribute_variations=100)
+    # d.save_csv("./discreate_data/dataset.csv")
+    # um = UtilityMatrix(d, 1000, 10, 600)
+    # um.export_csv("./discreate_data/")
 
     #fm, _ = SVT(um.ratings, max_iter=1500)
 
 
     um = UtilityMatrix.from_dir("./data/")
+    print(full_matrix_test(um))
     um.fill()
 
     u, s, vh = rec(um.filled_matrix)

@@ -8,6 +8,7 @@ from sparsesvd import sparsesvd
 import matplotlib.pyplot as plt
 import math, random
 from tqdm import tqdm
+from numpy.linalg import svd
 
 
 def SVT(M: pd.DataFrame,
@@ -47,6 +48,7 @@ def SVT(M: pd.DataFrame,
     for _ in tqdm(range(max_iter), desc= "Iteratively filling the matrix", colour="green"):
         s = r + 1
         while True:
+            print("Y: ",Y)
             U, S, V = sparsesvd(ss.csc_matrix(Y), s)
             s += increment
             try:
@@ -60,17 +62,109 @@ def SVT(M: pd.DataFrame,
         S = S[:r] - tau
         V = V[:r, :]
         X = (U * S).dot(V)
+
+        print(U.shape)
+        print(type(U))
+        print(S.shape)
+        print(type(S))
+        print(V.shape)
+        print(type(V))
+
+        print(X.shape)
+        print(X)
+
         X_omega = ss.csr_matrix((X[Omega], Omega), shape=(n, m))
 
         if ss_norm(X_omega - P_Omega_M) / ss_norm(P_Omega_M) < tolerance: break
 
         diff = P_Omega_M - X_omega
         Y += delta * diff
+        print(Y.shape)
         rmse.append(np_norm(M[M.nonzero()] - X[M.nonzero()]) / np.sqrt(len(X[M.nonzero()])))
         X = X.clip(0, 1)
 
     return X, rmse
 
+
+def fSVT(M: pd.DataFrame,
+        max_iter: int = 1500,
+        delta: int = 2,
+        tolerance: float = 0.001,
+        increment: int = 5):
+    """
+    Params:
+        M: matrix to complite
+        max_iter: maximum number of iterations
+        delta: step-size
+        tolerance: tolerance on the minimum improvement
+        increment: how many new singular values to check if they fall below tau
+    Returns:
+        X, rmse: complited matrix, error list
+    """
+    M = ss.csr_matrix(M.fillna(0).values)  # pandas DF into scipy sparse matrix
+    n, m = M.shape
+
+    total_num_nonzero = len(M.nonzero()[0])
+    idx = random.sample(range(total_num_nonzero), int(total_num_nonzero))
+    Omega = (M.nonzero()[0][idx], M.nonzero()[1][idx])
+
+    tau = 5 * math.sqrt(n * m)
+
+    ######
+    # SVT
+    ######
+    r = 0
+    rmse = []
+    data, indices = np.ravel(M[Omega]), Omega
+    P_Omega_M = ss.csr_matrix((data, indices), shape=(n, m))
+    k_0 = np.ceil(tau / (delta * ss_norm(P_Omega_M)))  # element-wise ceiling
+    Y = k_0 * delta * P_Omega_M
+
+    for _ in tqdm(range(max_iter), desc= "Iteratively filling the matrix", colour="green"):
+        s = r + 1
+        while True:
+            print("Y: ", Y)
+            U, S, V = svd(ss.csc_matrix(Y).todense(), s)      #svds(Y, 20)  # sparsesvd(ss.csc_matrix(Y), s)
+            s += increment
+            try:
+                if S[s - increment] <= tau: break
+            except:
+                break
+
+        r = np.sum(S > tau)
+
+        U = U.T[:, :r]
+        S = S[:r] - tau
+        V = V[:r, :]
+        U = np.squeeze(np.asarray(U))
+        S = np.squeeze(np.asarray(S))
+        V = np.squeeze(np.asarray(V))
+
+        print(U.shape)
+        print(type(U))
+        print(S.shape)
+        print(type(S))
+        print(V.shape)
+        print(type(V))
+
+        X = (U * S).dot(V)
+        # print(X.shape)
+        # print(X)
+        # break
+
+
+        print(X.shape)
+        X_omega = ss.csr_matrix((X[Omega], Omega), shape=(n, m))
+
+        if ss_norm(X_omega - P_Omega_M) / ss_norm(P_Omega_M) < tolerance: break
+
+        diff = P_Omega_M - X_omega
+        Y += delta * diff
+        print(Y.shape)
+        rmse.append(np_norm(M[M.nonzero()] - X[M.nonzero()]) / np.sqrt(len(X[M.nonzero()])))
+        X = X.clip(0, 1)
+
+    return X, rmse
 
 if __name__ == "__main__":
     ############
