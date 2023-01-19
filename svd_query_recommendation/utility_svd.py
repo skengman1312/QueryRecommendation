@@ -124,7 +124,7 @@ def fSVT(M: pd.DataFrame,
         s = r + 1
         while True:
             print("Y: ", Y)
-            U, S, V = svd(ss.csc_matrix(Y).todense(), s)      #svds(Y, 20)  # sparsesvd(ss.csc_matrix(Y), s)
+            U, S, V = svd(ss.csc_matrix(Y).toarray(), s)      #svds(Y, 20)  # sparsesvd(ss.csc_matrix(Y), s)
             s += increment
             try:
                 if S[s - increment] <= tau: break
@@ -133,12 +133,9 @@ def fSVT(M: pd.DataFrame,
 
         r = np.sum(S > tau)
 
-        U = U.T[:, :r]
+        U = U[:, :r]
         S = S[:r] - tau
         V = V[:r, :]
-        U = np.squeeze(np.asarray(U))
-        S = np.squeeze(np.asarray(S))
-        V = np.squeeze(np.asarray(V))
 
         print(U.shape)
         print(type(U))
@@ -181,7 +178,7 @@ if __name__ == "__main__":
     # Compute SVT and visualize error
     ##################################
 
-    X, rmse = SVT(utility_df, max_iter=1500)
+    X, rmse = fSVT(utility_df, max_iter=1500)
     print(pd.DataFrame(X).head(15))
 
     x_coordinate = range(len(rmse))
