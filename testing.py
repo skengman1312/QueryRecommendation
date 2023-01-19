@@ -4,7 +4,7 @@
 from svd_query_recommendation import *
 
 def ctest(um, usid, qid):
-    fm, _ = fSVT(um.ratings, max_iter=1000)
+    fm, _ = SVT(um.ratings, max_iter=1000)
     fm = pd.DataFrame(fm)
     print(um.queries[qid])
     print(f"truth: {um.users[usid].rate(um.queries[qid])}")
@@ -55,9 +55,9 @@ if __name__ == "__main__":
 
     um = UtilityMatrix.from_dir("./data/")
     print(full_matrix_test(um))
-    um.fill()
-
-    u, s, vh = rec(um.filled_matrix)
+    # um.fill()
+    #
+    # u, s, vh = rec(um.filled_matrix)
 
     # u_save(filename, um.users[0])
     # um.users[0].save(filename)
