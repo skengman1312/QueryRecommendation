@@ -70,6 +70,10 @@ def SVT(M: pd.DataFrame,
         print(V.shape)
         print(type(V))
 
+        print(U)
+        print(S)
+        print(V)
+
         print(X.shape)
         print(X)
 
@@ -124,6 +128,7 @@ def fSVT(M: pd.DataFrame,
         s = r + 1
         while True:
             print("Y: ", Y)
+            print(ss.csc_matrix(Y).todense().shape)
             U, S, V = svd(ss.csc_matrix(Y).todense(), s)      #svds(Y, 20)  # sparsesvd(ss.csc_matrix(Y), s)
             s += increment
             try:
@@ -147,6 +152,9 @@ def fSVT(M: pd.DataFrame,
         print(V.shape)
         print(type(V))
 
+        print(U)
+        print(S)
+        print(V)
         X = (U * S).dot(V)
         # print(X.shape)
         # print(X)
