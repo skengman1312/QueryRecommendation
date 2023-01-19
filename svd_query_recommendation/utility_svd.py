@@ -70,6 +70,10 @@ def SVT(M: pd.DataFrame,
         print(V.shape)
         print(type(V))
 
+        print(U)
+        print(S)
+        print(V)
+
         print(X.shape)
         print(X)
 
@@ -144,6 +148,9 @@ def fSVT(M: pd.DataFrame,
         print(V.shape)
         print(type(V))
 
+        print(U)
+        print(S)
+        print(V)
         X = (U * S).dot(V)
         # print(X.shape)
         # print(X)

@@ -17,7 +17,7 @@ def full_matrix_test(um):
     :param um: Utility Matrix
     :return: RMSE
     """
-    fm, _ = fSVT(um.ratings, max_iter=1500)
+    fm, _ = SVT(um.ratings, max_iter=1500)
     fm = fm.clip(0,1)
     fm = pd.DataFrame(fm)
 
