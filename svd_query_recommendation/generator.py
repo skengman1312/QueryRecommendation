@@ -217,6 +217,10 @@ class UtilityMatrix:
             os.makedirs(f"{filepath}/users")
         [u.save(filename=f"{filepath}/users/user_{u.id}") for u in self.users]
 
+        if self.filled_matrix is not None:
+            self.filled_matrix.to_csv(f"{filepath}/filled_utility_matrix.csv")
+
+
     @classmethod
     def from_dir(cls, filepath):
         td = DataSet.from_csv(f"{filepath}/dataset.csv")
@@ -234,6 +238,10 @@ class UtilityMatrix:
         q = pd.read_csv(f"{filepath}/query_log.csv", index_col=0)
         qq = [list(q.iloc[i, :].dropna()) for i in range(len(q))]
         tc.queries = pd.Series([Query(identifier=i, conditions=[c.split() for c in q]) for q, i in zip(qq, range(len(qq)))], dtype=object)
+        isExist = os.path.exists(f"{filepath}/filled_utility_matrix.csv")
+        if isExist:
+            tc.filled_matrix = pd.read_csv(f"{filepath}/filled_utility_matrix.csv", index_col=0)
+
         return tc
 
     def fill(self, max_iter=1500):

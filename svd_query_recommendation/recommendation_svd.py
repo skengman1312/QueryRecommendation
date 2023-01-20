@@ -8,7 +8,7 @@ class recco:
         self.top_q = None
         self.um = um
         np.random.seed(1312)
-        if not um.filled_matrix:
+        if um.filled_matrix is None:
             um.fill()
         self.u, self.s, self.vh = np.linalg.svd(um.filled_matrix, full_matrices=False)
 

@@ -55,6 +55,8 @@ if __name__ == "__main__":
 
 
     um = UtilityMatrix.from_dir("./discreate_small/")
+    um.fill()
+    um.export_csv("./discreate_small/")
     # print(full_matrix_test(um))
     # um.fill()
     #
@@ -68,4 +70,4 @@ if __name__ == "__main__":
     # print(fm)
 
 
-    print(full_matrix_test(um))
+    # print(full_matrix_test(um))
