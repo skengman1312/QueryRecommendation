@@ -3,8 +3,8 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from .utility_svd import SVT
-from .utils import *
+from utility_svd import SVT
+from utils import *
 import traceback
 
 
@@ -153,7 +153,7 @@ class User:
         self.seed = pd.concat([self.dataset.query(q) for q in self.queries], axis=0)
         self.iseed = self.seed.index
         # minumun number of element returned by the query seeds
-        smin = 1000
+        smin = 8000
         if len(self.iseed) < smin:  # check that the query seeds poit at sufficiently large portion of the dataset,
             # otherwise, the user will be very difficult to satisfy
             self.random_qseed(n=n)
@@ -253,7 +253,7 @@ class UtilityMatrix:
 
 
 if __name__ == "__main__":
-    d = DataSet(n_entries=100000, n_discrete_attributes=5, discrete_attribute_variations=100)
+    d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=0, discrete_attribute_variations=8)
 
     # print(d.table["attr_0"].value_counts())
     # d.table["attr_0"].value_counts().sort_index().plot()
@@ -275,20 +275,22 @@ if __name__ == "__main__":
     # print(qq in l)
     # qqq = Query(2, [("attr0", "==", "val0"), ("attr7", "==", "val2")])
 
-    # log = d.unique_query_log_gen(1000)
-    # u = User(d)
-    # u.random_qseed()
-    # log_rating = pd.DataFrame([u.rate(q) for q in log]).sort_values(0)
-    # log_rating.plot(kind="hist", bins=100)
-    # print(f"mean: {log_rating.mean()}")
-    # print(f"max: {log_rating.max()}")
-    # print(f"min: {log_rating.min()}")
-    #
-    # plt.show()
-    d.save_csv()
+    # d = DataSet.from_csv("../discreate_small/prova.csv")
 
-    um = UtilityMatrix(d, 1000, 10, 600)
-    um.export_csv("../data/")
+    log = d.unique_query_log_gen(2000)
+    u = User(d)
+    u.random_qseed()
+    log_rating = pd.DataFrame([u.rate(q) for q in log]).sort_values(0)
+    log_rating.plot(kind="hist", bins=100)
+    print(f"mean: {log_rating.mean()}")
+    print(f"max: {log_rating.max()}")
+    print(f"min: {log_rating.min()}")
+    #
+    plt.show()
+    d.save_csv("../discreate_small/prova.csv")
+
+    # um = UtilityMatrix(d, 2000, 10, 600)
+    # um.export_csv("../discreate_small/")
 
     # file = open("../data/prova" + '.txt', 'w')
     # file.write(pickle.dumps(um.users[0].__dict__))
