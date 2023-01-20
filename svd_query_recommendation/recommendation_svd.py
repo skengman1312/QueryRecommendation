@@ -2,6 +2,24 @@ import numpy as np
 from numpy.linalg import svd
 
 
+class recco:
+
+    def __init__(self, um):
+        self.top_q = None
+        self.um = um
+        np.random.seed(1312)
+        if not um.filled_matrix:
+            um.fill()
+        self.u, self.s, self.vh = np.linalg.svd(um.filled_matrix, full_matrices=False)
+
+
+    def get_top_q(self, k):
+
+        self.top_q = {i: self.vh[i].argpartition(-k)[-k:] for i in self.u.columns}
+
+    # def top_queries_per_concept(self):
+
+
 def rec(fm):
     np.random.seed(1312)
     u, s, vh = np.linalg.svd(fm, full_matrices=False)

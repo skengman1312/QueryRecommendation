@@ -186,7 +186,7 @@ if __name__ == "__main__":
     # Compute SVT and visualize error
     ##################################
 
-    X, rmse = fSVT(utility_df, max_iter=1500)
+    X, rmse = SVT(utility_df, max_iter=1500)
     print(pd.DataFrame(X).head(15))
 
     x_coordinate = range(len(rmse))
