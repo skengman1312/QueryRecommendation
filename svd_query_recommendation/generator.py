@@ -3,8 +3,8 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from utility_svd import SVT
-from utils import *
+from .utility_svd import SVT
+from .utils import *
 import traceback
 
 

@@ -4,6 +4,12 @@
 from svd_query_recommendation import *
 
 def ctest(um, usid, qid):
+    """
+
+    :param um:
+    :param usid:
+    :param qid:
+    """
     fm, _ = SVT(um.ratings, max_iter=1000)
     fm = pd.DataFrame(fm)
     print(um.queries[qid])
@@ -49,15 +55,16 @@ def full_matrix_test(um):
 
 if __name__ == "__main__":
 
-    # d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=0, discrete_attribute_variations=100)
-    # d.save_csv("./discreate_small/dataset.csv")
-    # um = UtilityMatrix(d, 2000, 100, 500)
-    # um.export_csv("./discreate_small/")
+    d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=0, discrete_attribute_variations=8)
+    d.save_csv("./discreate_small/dataset.csv")
+    um = UtilityMatrix(d, 2000, 50, 1000)
+    um.fill()
+    um.export_csv("./discreate_small/")
 
     #fm, _ = SVT(um.ratings, max_iter=1500)
 
 
-    um = UtilityMatrix.from_dir("./discreate_small/")
+    # um = UtilityMatrix.from_dir("./discreate_small/")
     # um.fill()
     # um.export_csv("./discreate_small/")
     # print(full_matrix_test(um))
