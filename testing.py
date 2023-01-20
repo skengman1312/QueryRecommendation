@@ -17,10 +17,13 @@ def full_matrix_test(um):
     :param um: Utility Matrix
     :return: RMSE
     """
+    if um.filled_matrix is None:
+        fm, _ = SVT(um.ratings, max_iter=1500)
+        fm = fm.clip(0,1)
+        fm = pd.DataFrame(fm)
+    else:
+        fm = um.filled_matrix
 
-    fm, _ = SVT(um.ratings, max_iter=1500)
-    fm = fm.clip(0,1)
-    fm = pd.DataFrame(fm)
 
     s, c = 0, 0
 
@@ -55,8 +58,8 @@ if __name__ == "__main__":
 
 
     um = UtilityMatrix.from_dir("./discreate_small/")
-    um.fill()
-    um.export_csv("./discreate_small/")
+    # um.fill()
+    # um.export_csv("./discreate_small/")
     # print(full_matrix_test(um))
     # um.fill()
     #
@@ -70,4 +73,4 @@ if __name__ == "__main__":
     # print(fm)
 
 
-    # print(full_matrix_test(um))
+    print(full_matrix_test(um))

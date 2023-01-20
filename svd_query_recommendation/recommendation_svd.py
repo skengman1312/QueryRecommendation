@@ -15,7 +15,7 @@ class recco:
 
     def get_top_q(self, k):
 
-        self.top_q = {i: self.vh[i].argpartition(-k)[-k:] for i in self.u.columns}
+        self.top_q = {i: self.vh[i].argpartition(-k)[-k:] for i in range(self.u.shape[0])}
 
     # def top_queries_per_concept(self):
 

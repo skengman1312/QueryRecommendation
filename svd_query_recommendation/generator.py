@@ -241,6 +241,8 @@ class UtilityMatrix:
         isExist = os.path.exists(f"{filepath}/filled_utility_matrix.csv")
         if isExist:
             tc.filled_matrix = pd.read_csv(f"{filepath}/filled_utility_matrix.csv", index_col=0)
+            tc.filled_matrix.index = tc.filled_matrix.index.astype("int64")
+            tc.filled_matrix.columns = tc.filled_matrix.columns.astype("int")
 
         return tc
 
