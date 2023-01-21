@@ -104,6 +104,10 @@ class Query:
     """
 
     def __init__(self, identifier: int, conditions):
+        """
+        :param identifier:
+        :param conditions:
+        """
         self.id = identifier
         self.attr = [a[0] for a in conditions]  # variable to hold the attributes included in the query,
         # can speed up the comparison
