@@ -3,7 +3,10 @@ import pandas as pd
 from numpy.linalg import svd
 
 
-class recco:
+class QSRS:
+    """
+    Query SVD Recommendation System class
+    """
 
     def __init__(self, um):
         self._res_counts = None
@@ -16,12 +19,24 @@ class recco:
         self.u, self.s, self.vh = np.linalg.svd(um.filled_matrix, full_matrices=False)
 
     def get_top_q(self, k):
-
+        """
+        Gets the top k queries for each concept and loads them
+        :param k:
+        """
         self.top_q = {i: self.vh[i].argpartition(-k)[-k:] for i in range(self.u.shape[0])}
         pd.concat([self.um.dataset.query(self.um.queries[q]) for q in self.top_q[10]])
         self.top_res = [pd.concat([self.um.dataset.query(self.um.queries[q]) for q in self.top_q[i]])
                         for i in range(len(self.top_q))]
         self._res_counts = {i: self.top_res[i].value_counts()[:5].reset_index() for i in range(len(self.top_q))}
+
+    # def top_queries_per_concept(self):
+
+    def recommendation(self, user_id, length: int):
+        """
+
+        :param length: number of queries to be recommended
+        :param user_id: user to get the recommendation for
+        """
 
         def generate_query(cdf):
             """
@@ -31,23 +46,28 @@ class recco:
             pert = 1
             while True:
                 cdf[0] *= pert
-                print(pert)
-                print(cdf)
 
                 q = list()
                 for attr in cdf.columns[:-1]:  # excluding the = index of the counts
                     d = pd.Series({v: cdf[0][cdf[attr] == v].sum() for v in cdf[attr].unique()})
                     if d.max() > d.sum() / 2:
-                        q.append([attr, "==", d.idxmax()])
+                        q.append([attr, "==", f'"{d.idxmax()}"'])
 
                 yield q
                 pert = [np.random.uniform(0.2, 1.8) for _ in range(cdf.shape[0])]
 
-        g = generate_query(self._res_counts[0])
-        for _ in range(10):
-            print(next(g))
+        if not self._res_counts:
+            self.get_top_q(5)
+        top3c = self.u[user_id].argpartition(-3)[-3:]
+        generators = [generate_query(self._res_counts[c]) for c in top3c]
+        qq, i = list(), 0
+        while len(qq) < length:
+            q = next(generators[i % 3])
+            if q not in qq:
+                qq.append(q)
+        return qq
 
-    # def top_queries_per_concept(self):
+    # TODO: implement "similarity" parameter for user
 
 
 def rec(fm):
