@@ -3,6 +3,7 @@
 
 from svd_query_recommendation import *
 
+
 def ctest(um, usid, qid):
     """
 
@@ -25,14 +26,12 @@ def full_matrix_test(um):
     """
     if um.filled_matrix is None:
         fm, _ = SVT(um.ratings, max_iter=1500)
-        fm = fm.clip(0,1)
+        fm = fm.clip(0, 1)
         fm = pd.DataFrame(fm)
     else:
         fm = um.filled_matrix
 
-
     s, c = 0, 0
-
 
     for i in tqdm(um.ratings, desc="RMSE calculation", total=len(um.ratings.columns)):
         index = um.ratings[i][um.ratings[i].isna()].index
@@ -49,20 +48,24 @@ def full_matrix_test(um):
         # print(c)
     print(s)
     print(c)
-        # break
-    return (s / c) ** (1/2)
+    # break
+    return (s / c) ** (1 / 2)
+
+
+def test_recco(rec, um):
+    r = [rec.recommendationV2(i, 5) for i in range(len(um.users))]
+    rr = {u.id: [u.rate(Query(0,q)) for q in r[u.id]] for u in um.users }
+    return rr
 
 
 if __name__ == "__main__":
-
     # d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=0, discrete_attribute_variations=8)
     # d.save_csv("./discreate_small/dataset.csv")
     # um = UtilityMatrix(d, 2000, 50, 1000)
     # um.fill()
     # um.export_csv("./discreate_small/")
 
-    #fm, _ = SVT(um.ratings, max_iter=1500)
-
+    # fm, _ = SVT(um.ratings, max_iter=1500)
 
     um = UtilityMatrix.from_dir("./discreate_small/")
     # um.fill()
@@ -79,5 +82,4 @@ if __name__ == "__main__":
     # up.__dict__ = upd
     # print(fm)
 
-
-     # print(full_matrix_test(um))
+    # print(full_matrix_test(um))
