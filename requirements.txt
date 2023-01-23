@@ -4,3 +4,4 @@ matplotlib~=3.6.3
 tqdm~=4.64.0
 scipy~=1.8.0
 sparsesvd~=0.2.2
+scikit-learn~=1.0.2
