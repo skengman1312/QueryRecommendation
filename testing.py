@@ -54,7 +54,7 @@ def full_matrix_test(um):
 
 def test_recco(rec, um):
     r = [rec.recommendationV2(i, 5) for i in range(len(um.users))]
-    rr = {u.id: [u.rate(Query(0,q)) for q in r[u.id]] for u in um.users }
+    rr = {u.id: [u.rate(Query(0, q)) for q in r[u.id]] for u in um.users}
     return rr
 
 
