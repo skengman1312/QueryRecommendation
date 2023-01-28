@@ -34,7 +34,7 @@ class DT:
     
 
 if __name__ == "__main__":
-    um = UtilityMatrix.from_dir("./discreate_small/")
+    um = UtilityMatrix.from_dir("../discreate_small/")
     decision_tree = DT(um)
     for q in [3]:
         print(f'\nq: {q}')
