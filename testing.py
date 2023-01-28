@@ -53,9 +53,17 @@ def full_matrix_test(um):
 
 
 def test_recco(rec, um):
-    r = [rec.recommendationV2(i, 5) for i in range(len(um.users))]
-    rr = {u.id: [u.rate(Query(0, q)) for q in r[u.id]] for u in um.users}
-    return rr
+    recommenders = [rec.recommendationV2, rec.recommendation]
+    res = list()
+    mean_utility = list()
+    for recommender in recommenders:
+        r = [recommender(i, 5) for i in range(len(um.users))]
+        rr = {u.id: [u.rate(Query(0, q)) for q in r[u.id]] for u in um.users}
+        rrm = sum([sum(r) for r in rr.values()])/(len(rr)*5)
+        res.append(rr)
+        mean_utility.append(rrm)
+    print(res, mean_utility)
+    return res, mean_utility
 
 
 if __name__ == "__main__":
@@ -68,6 +76,8 @@ if __name__ == "__main__":
     # fm, _ = SVT(um.ratings, max_iter=1500)
 
     um = UtilityMatrix.from_dir("./discreate_small/")
+    r = QSRS(um)
+    test_recco(r,um)
     # um.fill()
     # um.export_csv("./discreate_small/")
     # print(full_matrix_test(um))

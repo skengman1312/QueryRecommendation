@@ -102,7 +102,6 @@ class QSRS:
         # top 5 queries of concept 11 as rated by user 10
         top_queries_per_concept = {c: self.um.filled_matrix.loc[user_id][self.top_q[c]].sort_values(
             ascending=False)[:5].reset_index()["index"] for c in top3c}
-
         top_res = {c :pd.concat([self.um.dataset.query(self.um.queries[q]) for q in top_queries_per_concept[c]])
                    for c in top_queries_per_concept}
 
