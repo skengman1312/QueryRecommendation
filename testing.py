@@ -53,17 +53,23 @@ def full_matrix_test(um):
 
 
 def test_recco(rec, um):
-    recommenders = [rec.recommendationV2, rec.recommendation]
+    recommenders = [rec.recommendationV4, rec.recommendationV3, rec.recommendationV2, rec.recommendation]
     res = list()
     mean_utility = list()
+    print(um.dataset.table.shape)
+    # um.dataset.table = um.dataset.table.drop_duplicates()
+    print(um.dataset.table.shape)
     for recommender in recommenders:
-        r = [recommender(i, 5) for i in range(len(um.users))]
-        rr = {u.id: [u.rate(Query(0, q)) for q in r[u.id]] for u in um.users}
-        rrm = sum([sum(r) for r in rr.values()])/(len(rr)*5)
+        print(f"Testing recommender {str(recommender).split()[2]}\n")
+        r = [recommender(i, 5) for i in tqdm(range(len(um.users)), desc="Generating recommended queries")]
+        rr = {u.id: [u.rate(Query(0, q)) for q in r[u.id]] for u in tqdm(um.users, desc="Rating the new queries")}
+        rrm = sum([sum(r) for r in rr.values()]) / (len(rr) * 5)
         res.append(rr)
         mean_utility.append(rrm)
-    print(res, mean_utility)
+    print(mean_utility)
     return res, mean_utility
+
+
 
 
 if __name__ == "__main__":
@@ -75,11 +81,11 @@ if __name__ == "__main__":
 
     # fm, _ = SVT(um.ratings, max_iter=1500)
 
-    um = UtilityMatrix.from_dir("./test_medium_2/")
+    um = UtilityMatrix.from_dir("./test_small/")
     r = QSRS(um)
     # print(r.recommendationV3(0, 5))
 
-    test_recco(r,um)
+    test_recco(r, um)
     # um.fill()
     # um.export_csv("./discreate_small/")
     # print(full_matrix_test(um))
