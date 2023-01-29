@@ -68,15 +68,17 @@ def test_recco(rec, um):
 
 if __name__ == "__main__":
     # d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=0, discrete_attribute_variations=8)
-    # d.save_csv("./discreate_small/dataset.csv")
-    # um = UtilityMatrix(d, 2000, 50, 1000)
+    # d.save_csv("./test_medium_2/dataset.csv")
+    # um = UtilityMatrix(d, 2000, 300, 100)
     # um.fill()
-    # um.export_csv("./discreate_small/")
+    # um.export_csv("./test_medium_2/")
 
     # fm, _ = SVT(um.ratings, max_iter=1500)
 
-    um = UtilityMatrix.from_dir("./discreate_small/")
+    um = UtilityMatrix.from_dir("./test_medium_2/")
     r = QSRS(um)
+    # print(r.recommendationV3(0, 5))
+
     test_recco(r,um)
     # um.fill()
     # um.export_csv("./discreate_small/")
