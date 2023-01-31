@@ -1,5 +1,3 @@
-# import svd_query_recommendation.generator as gen
-# import svd_query_recommendation.utility_svd as svd
 
 from svd_query_recommendation import *
 
@@ -35,20 +33,13 @@ def full_matrix_test(um):
 
     for i in tqdm(um.ratings, desc="RMSE calculation", total=len(um.ratings.columns)):
         index = um.ratings[i][um.ratings[i].isna()].index
-        # print(um.ratings[i][um.ratings[i].isna()])
         gt = [um.users[uid].rate(um.queries[i]) for uid in index]
         pred = fm[i][index]
         s_err = (gt - pred) ** 2
         s += s_err.sum()
         c += len(s_err)
-        # print(f"ground truth :{gt}")
-        # print(f"prediction: {pred}")
-        # print(gt-pred)
-        # print(f"error: {s_err.sum()}")
-        # print(c)
     print(s)
     print(c)
-    # break
     return (s / c) ** (1 / 2)
 
 

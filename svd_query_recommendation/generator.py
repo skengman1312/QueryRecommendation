@@ -27,7 +27,6 @@ class DataSet:
         dd = {f"attr_{i}": np.random.normal(loc=5, scale=2, size=n_entries) for i in
               range(n_discrete_attributes, n_discrete_attributes + n_continuous_attributes)}
         # lines 18-24 can be condensed in a single line of code if needed
-        # TODO: add support for other distributions and/or parameter tuning
         self.table = pd.DataFrame({**d, **dd})
         self.log = None
 
@@ -56,9 +55,6 @@ class DataSet:
         """
         generates a log of unique queries
         """
-        # we have to decide whether we make each query unique or not,
-        # in general I doubt there will be many duplicates,
-        # we can also consider a datastructures dedicated to query logs aas a stand-alone class
         log = list()
         with tqdm(total=log_len, desc="Query log generation", disable=disable) as pbar:
             while len(log) < log_len:
@@ -168,20 +164,27 @@ class User:
         :param q: query to be rated by the user
         :return:
         """
-        # print(self.dataset.table)
+
         qi = self.dataset.query(q).index  # index of the values returned by the query q
         # the query is rated:
         # (number of rows pointed both by seed and rated query) / (number of rows pointed by rated query)
         return np.round(len(qi.intersection(self.iseed)) / len(qi), decimals=4) if len(qi) > 0 else 0
 
     def save(self, filename):
-        # (filename, line_number, function_name, text) = traceback.extract_stack()[-2]
-        # def_name = text[:text.find('=')].strip()
-        # print(def_name)
+        """
+
+        :param filename:
+        """
         u_save(filename, self)
 
     @classmethod
     def load(cls, d, filename):
+        """
+
+        :param d: dataset
+        :param filename:
+        :return:
+        """
         upd = u_load(filename)
         up = cls(d)
         up.__dict__ = upd
@@ -224,14 +227,13 @@ class UtilityMatrix:
         if self.filled_matrix is not None:
             self.filled_matrix.to_csv(f"{filepath}/filled_utility_matrix.csv")
 
-
     @classmethod
     def from_dir(cls, filepath):
         td = DataSet.from_csv(f"{filepath}/dataset.csv")
         tc = cls(dataset=td, n_queries=0, n_users=0, n_queries_per_user=0)
         tc.ratings = pd.read_csv(f"{filepath}/utility_matrix.csv", index_col=0)
         tc.ratings.index = tc.ratings.index.astype("int64")
-        tc.ratings.columns =tc.ratings.columns.astype("int")
+        tc.ratings.columns = tc.ratings.columns.astype("int")
 
         n_users = len([entry for entry in os.listdir(f"{filepath}/users") if
                        os.path.isfile(os.path.join(f"{filepath}/users", entry))])
@@ -241,7 +243,8 @@ class UtilityMatrix:
 
         q = pd.read_csv(f"{filepath}/query_log.csv", index_col=0)
         qq = [list(q.iloc[i, :].dropna()) for i in range(len(q))]
-        tc.queries = pd.Series([Query(identifier=i, conditions=[c.split() for c in q]) for q, i in zip(qq, range(len(qq)))], dtype=object)
+        tc.queries = pd.Series(
+            [Query(identifier=i, conditions=[c.split() for c in q]) for q, i in zip(qq, range(len(qq)))], dtype=object)
         isExist = os.path.exists(f"{filepath}/filled_utility_matrix.csv")
         if isExist:
             tc.filled_matrix = pd.read_csv(f"{filepath}/filled_utility_matrix.csv", index_col=0)

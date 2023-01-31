@@ -24,12 +24,9 @@ class QSRS:
         :param k:
         """
         self.top_q = {i: self.vh[i].argpartition(-k)[-k:] for i in range(self.u.shape[0])}
-        # pd.concat([self.um.dataset.query(self.um.queries[q]) for q in self.top_q[10]])
         self.top_res = [pd.concat([self.um.dataset.query(self.um.queries[q]) for q in self.top_q[i]])
                         for i in range(len(self.top_q))]
         self._res_counts = {i: self.top_res[i].value_counts()[:5].reset_index() for i in range(len(self.top_q))}
-
-    # def top_queries_per_concept(self):
 
     def recommendation(self, user_id, length: int):
         """
@@ -71,7 +68,7 @@ class QSRS:
     def recommendationV2(self, user_id, length: int):
         """
         Recommend taking into account the top queries as rated by the user for concepts mostly associated to the user
-        count variant
+        count only variant
         :param length: number of queries to be recommended
         :param user_id: user to get the recommendation for
         """
@@ -98,9 +95,6 @@ class QSRS:
             self.get_top_q(10)
         top3c = self.u[user_id].argpartition(-3)[-3:]
 
-        # r.um.filled_matrix.loc[10][r.top_q[11]] get rating for the top queries of concept 11 by user 10
-        # r.um.filled_matrix.loc[10][r.top_q[11]].sort_values(ascending=False)[:5].reset_index()["index"]
-        # top 5 queries of concept 11 as rated by user 10
         top_queries_per_concept = {c: self.um.filled_matrix.loc[user_id][self.top_q[c]].sort_values(
             ascending=False)[:5].reset_index()["index"] for c in top3c}
         top_res = {c: pd.concat([self.um.dataset.query(self.um.queries[q]) for q in top_queries_per_concept[c]])
@@ -108,7 +102,6 @@ class QSRS:
 
         res_counts = {i: top_res[i].value_counts()[:5].reset_index() for i in top_queries_per_concept}
 
-        # print(top_res)
         generators = [generate_query(res_counts[c]) for c in top3c]
 
         qq, i = list(), 0
@@ -149,16 +142,10 @@ class QSRS:
             self.get_top_q(10)
         top3c = self.u[user_id].argpartition(-3)[-3:]
 
-        # r.um.filled_matrix.loc[10][r.top_q[11]] get rating for the top queries of concept 11 by user 10
-        # r.um.filled_matrix.loc[10][r.top_q[11]].sort_values(ascending=False)[:5].reset_index()["index"]
-        # top 5 queries of concept 11 as rated by user 10
         top_queries_per_concept = {c: self.um.filled_matrix.loc[user_id][self.top_q[c]].sort_values(
             ascending=False)[:5].reset_index()["index"] for c in top3c}
 
-        # top_res = {c: pd.concat([self.um.dataset.query(self.um.queries[q]) for q in top_queries_per_concept[c]])
-        #            for c in top_queries_per_concept}
-
-        top_resw = dict()  # self.um.filled_matrix[q][user_id].insert(0, "rating", self.um.filled_matrix[q][user_id])
+        top_resw = dict()
         for c, i in top_queries_per_concept.items():
             rl = list()
             for q in i:
@@ -167,15 +154,14 @@ class QSRS:
                 rl.append(r)
             top_resw[c] = pd.concat(rl)
 
-        # res_counts = {i: top_res[i].value_counts()[:5].reset_index() for i in top_queries_per_concept}
-
         res_countsw = {i: top_resw[i].value_counts()[:15].reset_index() for i in top_queries_per_concept}
-        # print(res_countsw)
+
         for i, v in res_countsw.items():
             res_countsw[i].insert(len(res_countsw[i].columns), "wu", v["rating"] * v[0])
             res_countsw[i] = res_countsw[i].groupby([attr for attr in v.columns[:-3]]).mean()
-            res_countsw[i] = res_countsw[i].sort_values(by="wu", ascending=False).drop(["rating", 0], axis=1).reset_index()
-        # print(res_countsw)
+            res_countsw[i] = res_countsw[i].sort_values(by="wu", ascending=False).drop(["rating", 0],
+                                                                                       axis=1).reset_index()
+
         generators = [generate_query(res_countsw[c]) for c in top3c]
 
         qq, i = list(), 0
@@ -189,6 +175,7 @@ class QSRS:
     def recommendationV4(self, user_id, length: int):
         """
         Recommend taking into account the top queries as rated by the user for concepts mostly associated to the user
+        utility only variant
 
         :param length: number of queries to be recommended
         :param user_id: user to get the recommendation for
@@ -216,14 +203,8 @@ class QSRS:
             self.get_top_q(10)
         top3c = self.u[user_id].argpartition(-3)[-3:]
 
-        # r.um.filled_matrix.loc[10][r.top_q[11]] get rating for the top queries of concept 11 by user 10
-        # r.um.filled_matrix.loc[10][r.top_q[11]].sort_values(ascending=False)[:5].reset_index()["index"]
-        # top 5 queries of concept 11 as rated by user 10
         top_queries_per_concept = {c: self.um.filled_matrix.loc[user_id][self.top_q[c]].sort_values(
             ascending=False)[:5].reset_index()["index"] for c in top3c}
-
-        # top_res = {c: pd.concat([self.um.dataset.query(self.um.queries[q]) for q in top_queries_per_concept[c]])
-        #            for c in top_queries_per_concept}
 
         top_resw = dict()
         for c, i in top_queries_per_concept.items():
@@ -234,14 +215,12 @@ class QSRS:
                 rl.append(r)
             top_resw[c] = pd.concat(rl)
 
-        # res_counts = {i: top_res[i].value_counts()[:5].reset_index() for i in top_queries_per_concept}
-
         res_countsw = {i: top_resw[i].value_counts().reset_index() for i in top_queries_per_concept}
 
         for i, v in res_countsw.items():
-            # res_countsw[i].insert(len(res_countsw[i].columns), "wu", v["rating"] * v[0])
             res_countsw[i] = res_countsw[i].groupby([attr for attr in v.columns[:-3]]).mean()
-            res_countsw[i] = res_countsw[i].sort_values(by="rating", ascending=False).drop([0], axis=1).reset_index()[:15]
+            res_countsw[i] = res_countsw[i].sort_values(by="rating", ascending=False).drop([0], axis=1).reset_index()[
+                             :15]
 
         generators = [generate_query(res_countsw[c]) for c in top3c]
 
@@ -252,8 +231,6 @@ class QSRS:
                 qq.append(q)
             i += 1
         return qq
-
-    # TODO: implement "similarity" parameter for user
 
 
 def rec(fm):
