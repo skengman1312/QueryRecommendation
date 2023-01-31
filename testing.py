@@ -61,7 +61,7 @@ def test_recco(rec, um):
 
 
 if __name__ == "__main__":
-     # Initialize the dataset from scratch and save, parent directory data must be existing
+    # Initialize the dataset from scratch and save, parent directory data must be existing
 
     # d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=0, discrete_attribute_variations=8)
     # d.save_csv("./data/dataset.csv")
@@ -91,3 +91,5 @@ if __name__ == "__main__":
     # Test the matrix reconstruction of SVT on synthetic data
 
     # print(full_matrix_test(um))
+
+    pass
