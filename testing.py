@@ -1,4 +1,3 @@
-
 from svd_query_recommendation import *
 
 
@@ -61,34 +60,34 @@ def test_recco(rec, um):
     return res, mean_utility
 
 
-
-
 if __name__ == "__main__":
+     # Initialize the dataset from scratch and save, parent directory data must be existing
+
     # d = DataSet(n_entries=100000, n_discrete_attributes=5, n_continuous_attributes=0, discrete_attribute_variations=8)
-    # d.save_csv("./test_medium_2/dataset.csv")
+    # d.save_csv("./data/dataset.csv")
+
+    # Load the data in the Utility Matrix class and save it to directory
+
     # um = UtilityMatrix(d, 2000, 300, 100)
-    # um.fill()
-    # um.export_csv("./test_medium_2/")
+    # um.fill() # embedded method to call for the SVT algorithm
+    # um.export_csv("./data/")
+
+    # Load UtilityMatrix object from directory
+
+    # um = UtilityMatrix.from_dir("./data/")
+
+    # Access the SVT algorithm outside the UtilityMatrix class
 
     # fm, _ = SVT(um.ratings, max_iter=1500)
 
-    um = UtilityMatrix.from_dir("./test_small/")
-    r = QSRS(um)
+    # Initialize the recommender system and ask for recommendation with one of the three methods
+
+    # r = QSRS(um)
     # print(r.recommendationV3(0, 5))
 
-    test_recco(r, um)
-    # um.fill()
-    # um.export_csv("./discreate_small/")
-    # print(full_matrix_test(um))
-    # um.fill()
-    #
-    # u, s, vh = rec(um.filled_matrix)
+    # Test the 4 variants of the QSRS on the specified UtilityMatrix object
+    # test_recco(r, um)
 
-    # u_save(filename, um.users[0])
-    # um.users[0].save(filename)
-    # upd = u_load(filename)
-    # up = User.load(d, filename=filename)
-    # up.__dict__ = upd
-    # print(fm)
+    # Test the matrix reconstruction of SVT on synthetic data
 
     # print(full_matrix_test(um))
